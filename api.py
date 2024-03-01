@@ -47,34 +47,3 @@ async def login_user(user: User):
     access_token_expires = timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
-
-@router.post("/forget-password/")
-async def forget_password(email: str):
-    collection = db["users"]
-    
-    # Check if the email exists
-    existing_user = await collection.find_one({"email": email})
-    if not existing_user:
-        raise HTTPException(status_code=404, detail="Email not found")
-    
-    # Generate JWT token for password reset
-    expires = datetime.utcnow() + timedelta(hours=1)
-    reset_token = jwt.encode({"email": email, "exp": expires}, SECRET_KEY, algorithm=ALGORITHM)
-    
-    return {"reset_token": reset_token}
-
-
-@router.post("/change-password/")
-async def change_password(user):
-    collection = db["users"]
-    
-    # Verify old password and update new password
-    existing_user = await collection.find_one({"email": user.email})
-    if not existing_user or not pwd_context.verify(user.old_password, existing_user['password']):
-        raise HTTPException(status_code=401, detail="Invalid old password")
-    
-    # Update password in the database
-    hashed_password = pwd_context.hash(user.new_password)
-    await collection.update_one({"email": user.email}, {"$set": {"password": hashed_password}})
-    
-    return {"message": "Password changed successfully"}
