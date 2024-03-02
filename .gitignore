@@ -1,5 +1,12 @@
-/__pycache__
-/.env
-/.git
-/src/__pycache__
-/.gitignore
+# Ignore Python bytecode files
+__pycache__/
+
+# Ignore .env files
+.env
+
+# Other common files to ignore
+*.pyc
+*.pyo
+*.log
+*.swp
+.DS_Store
