@@ -4,7 +4,6 @@ __pycache__/
 # Ignore .env files
 .env
 
-# Other common files to ignore
 *.pyc
 *.pyo
 *.log
