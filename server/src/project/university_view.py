@@ -4,10 +4,22 @@ import jwt
 from project.database import db
 from bson import ObjectId
 from typing import List
+from pydantic import BaseModel
 
 router = APIRouter()
+from enum import Enum
 
 PAGE_SIZE = 5  
+
+class UniversityFilters(BaseModel):
+    country: str = None
+    ranking: int = None
+
+
+class FilterType(str, Enum):
+    country = "country"
+    ranking = "ranking"
+
 
 class UniversityOut(University):
     id: str
@@ -62,15 +74,35 @@ async def create_university(university: University,request:Request):
             raise HTTPException(status_code=500, detail="Failed to create university")
 
 # Get Universities API
-@router.get("/universities/{page_no}", response_model=List[UniversityOut])
-async def get_universities(page_no: int,request:Request):
+@router.get("/universities/", response_model=List[UniversityOut])
+async def get_universities(
+    request: Request,
+    page_no: int = 1,
+    page_size: int = PAGE_SIZE,
+    search_term: str = None,
+    filters: UniversityFilters = UniversityFilters()
+):
     token = request.headers.get("Authorization", None)
-    validateToken = validate_token(token)    
-    if(validateToken):
+    validateToken = validate_token(token)
+    if validateToken:
         if page_no < 1:
-            raise HTTPException(status_code=400, detail="Page number must be greater than or equal to 1")
-        skip_count = (page_no - 1) * PAGE_SIZE
-        universities = await db["universities"].find().skip(skip_count).limit(PAGE_SIZE).to_list(length=None)
+            raise HTTPException(
+                status_code=400, detail="Page number must be greater than or equal to 1"
+            )
+
+        query = {}
+        if search_term:
+            # Case-insensitive search for universities containing the search term
+            query["name"] = {"$regex": search_term, "$options": "i"}
+
+        # Apply filters
+        if filters.country:
+            query["country"] = filters.country
+        if filters.ranking:
+            query["ranking"] = filters.ranking
+
+        skip_count = (page_no - 1) * page_size
+        universities = await db["universities"].find(query).skip(skip_count).limit(page_size).to_list(length=None)
         universitiesId = [
             UniversityOut(**uni, id=str(uni["_id"])) for uni in universities
         ]
@@ -110,4 +142,4 @@ async def delete_university(university_id: str,request:Request):
         if result.deleted_count == 1:
             return {"message": "University deleted successfully"}
         else:
-            raise HTTPException(status_code=404, detail="University not found")
+            raise HTTPException(status_code=404, detail="University not found") 
