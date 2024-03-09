@@ -9,7 +9,7 @@ from pydantic import BaseModel
 router = APIRouter()
 from enum import Enum
 
-PAGE_SIZE = 5  
+PAGE_SIZE = 8 
 
 class UniversityFilters(BaseModel):
     country: str = None
@@ -100,6 +100,8 @@ async def get_universities(
             query["country"] = filters.country
         if filters.ranking:
             query["ranking"] = filters.ranking
+
+        total_universities = await db["universities"].count_documents(query)
 
         skip_count = (page_no - 1) * page_size
         universities = await db["universities"].find(query).skip(skip_count).limit(page_size).to_list(length=None)

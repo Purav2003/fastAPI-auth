@@ -19,3 +19,6 @@ class University(BaseModel):
     website: str = None
     ranking: int = None
     image_url: str = None
+    google_review: float = None
+    uniReview: str = None
+    

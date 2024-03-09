@@ -73,7 +73,7 @@ async def reset_password(request: Request):
     id_obj = ObjectId(id)
     user = await collection.find_one({"_id": id_obj})
     if not pwd_context.verify(old_password, user['password']):
-        raise HTTPException(status_code=401, detail="Invalid old password")    
+        raise HTTPException(status_code=400, detail="Invalid old password")    
     hashed_new_password = pwd_context.hash(new_password)
     if new_password == old_password:
         raise HTTPException(status_code=400, detail="New password is same as old password")
@@ -83,6 +83,26 @@ async def reset_password(request: Request):
         return {"message": "Password reset successful","new":hashed_new_password}
     else:
         return {"message": "Password reset not successful"}
+    
+
+@router.post("/forgot-password/")
+async def forgot_password(request:Request):
+    request_body = await request.json()
+    email = request_body.get("email")
+    new_password = request_body.get("new_password")
+    collection = db["users"]
+    existing_user = await collection.find_one({"email": email})
+    if not existing_user:
+        raise HTTPException(status_code=400, detail="Email not registered")
+    else:
+        hashed_new_password = pwd_context.hash(new_password)
+        id_obj = ObjectId(existing_user["_id"])
+        passw = await collection.update_one({"_id": id_obj}, {"$set": {"password": hashed_new_password}})
+        if passw:
+            return {"message": "Password reset successful","new":hashed_new_password}
+        else:
+            return {"message": "Password reset not successful"}
+        
 
 # Update Email API
 @router.put("/update-email/")
@@ -105,6 +125,9 @@ async def update_email(request: Request):
     if email == new_email:
         raise HTTPException(status_code=400, detail="New email is same as old email")
     id_obj = ObjectId(id)
+    new_email_user = await collection.find_one({"email": new_email})
+    if new_email_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
     conf_email = await collection.update_one({"_id": id_obj}, {"$set": {"email": new_email}})
     if conf_email:
         return {"message": "Email updated successfully"}
