@@ -106,7 +106,7 @@ const Login = () => {
                                 <Link to="/signup" className="ml-1 font-bold underline">Signup</Link>
                             </div>
                             <div className="mt-2 text-sm text-gray-600">
-                                <Link to="/forgot-password/" className="ml-1 font-bold underline">Forgot Password?</Link>
+                                <Link to="/forgot-password/email" className="ml-1 font-bold underline">Forgot Password?</Link>
                             </div>
                         </div>
                     </form>

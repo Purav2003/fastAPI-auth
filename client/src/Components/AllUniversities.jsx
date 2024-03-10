@@ -50,14 +50,14 @@ const AllUniversities = () => {
 
     return (
         <div className="p-8">
-            <div className="relative mx-12">
+            <div className="relative lg:mx-12 md:mx-12">
                 <button className="absolute inset-y-0 left-2 text-gray-400 px-3 py-2 rounded-l">
                     <FaSearch />
                 </button>
                 <input
                     type="text"
                     placeholder="Enter University Name"
-                    className="border rounded p-2 w-[300px] outline-none rounded-full pl-12 py-3"
+                    className="border rounded p-2 w-[350px] lg:w-[300px] outline-none rounded-full pl-12 py-3"
                     value={searchTerm}
                     onChange={handleSearch}
                 />
@@ -65,7 +65,7 @@ const AllUniversities = () => {
             {loading ? (
                 <Loader />
             ) : universities?.length > 0 ? (
-                <div className="mb-8 grid grid-cols-4">
+                <div className="mb-8 grid lg:grid-cols-4 grid-cols-1 md:grid-cols-2">
                     {universities.map((university) => (
                         <div key={university.id} className="items-center mb-4 px-12">
                             <Link to={`/university/${university.id}`}>

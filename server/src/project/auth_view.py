@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import jwt
 from bson import ObjectId
+import random
+import smtplib
+from email.mime.text import MIMEText
 
 router = APIRouter()
 
@@ -13,6 +16,23 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 48
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def generate_otp():
+    return ''.join(random.choices('0123456789', k=6))
+
+def send_otp(email, otp):
+    sender_email = "shahpurav308@gmail.com"  # Enter your email address
+    sender_password = "npgb ndoe saio zghl"   # Enter your email password
+
+    message = MIMEText(f"Your OTP for password reset is: {otp}")
+    message['Subject'] = 'Password Reset OTP'
+    message['From'] = sender_email
+    message['To'] = email
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, email, message.as_string())
 
 
 def create_access_token(data: dict, expires_delta: timedelta):
@@ -92,23 +112,55 @@ async def reset_password(request: Request):
     
 
 @router.post("/forgot-password/")
-async def forgot_password(request:Request):
+async def forgot_password(request: Request):
     request_body = await request.json()
     email = request_body.get("email")
-    new_password = request_body.get("new_password")
     collection = db["users"]
     existing_user = await collection.find_one({"email": email})
     if not existing_user:
         raise HTTPException(status_code=400, detail="Email not registered")
-    else:
-        hashed_new_password = pwd_context.hash(new_password)
-        id_obj = ObjectId(existing_user["_id"])
-        passw = await collection.update_one({"_id": id_obj}, {"$set": {"password": hashed_new_password}})
-        if passw:
-            return {"message": "Password reset successful","new":hashed_new_password}
-        else:
-            return {"message": "Password reset not successful"}
-        
+
+    # Generate and save OTP
+    otp = generate_otp()
+    await collection.update_one({"email": email}, {"$set": {"otp": otp}})
+
+    # Send OTP to email
+    send_otp(email, otp)
+
+    return {"message": "OTP sent to your email"}
+
+@router.post("/verify-otp/")
+async def verify_otp(request: Request):
+    request_body = await request.json()
+    email = request_body.get("email")
+    otp_attempt = request_body.get("otp")
+    collection = db["users"]
+    user = await collection.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=400, detail="Email not registered")
+
+    stored_otp = user.get("otp")
+    if not stored_otp or stored_otp != otp_attempt:
+        raise HTTPException(status_code=401, detail="Invalid OTP")
+
+    return {"message": "OTP verified successfully"}
+
+
+@router.put("/reset-password-after-otp/")
+async def reset_password_after_otp(request: Request):
+    request_body = await request.json()
+    email = request_body.get("email")
+    new_password = request_body.get("new_password")
+    collection = db["users"]
+    user = await collection.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=400, detail="Email not registered")
+
+    # Reset password
+    hashed_new_password = pwd_context.hash(new_password)
+    await collection.update_one({"email": email}, {"$set": {"password": hashed_new_password, "otp": None}})
+
+    return {"message": "Password reset successful"}
 
 # Update Email API
 @router.put("/update-profile/")

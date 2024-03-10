@@ -6,7 +6,6 @@ import { Input } from 'antd';
 
 const ForgotPassword = () => {
     const [formData, setFormData] = useState({
-        email:'',
         password: '',
         repassword: ''
     });
@@ -20,7 +19,7 @@ const ForgotPassword = () => {
 
     const handleLoginClick = async (e) => {
         e.preventDefault();
-        if (formData.password === '' || formData.repassword === '' || formData.email === '') {
+        if (formData.password === '' || formData.repassword === '') {
             toast.error("All fields are required");
             return;
         }
@@ -30,16 +29,16 @@ const ForgotPassword = () => {
         }
         const dataToSend = {
             new_password: formData.password,
-            email: formData.email
+            email: window.localStorage.getItem("ForgotEmail")
         };
         try {
-            const response = await axios.post('http://localhost:8000/forgot-password', dataToSend);
+            const response = await axios.put('http://localhost:8000/reset-password-after-otp/', dataToSend);
             const data = await response;       
             console.log(data)
             if (data.status === 200) {
                 localStorage.clear()
                 toast.success("Password Reset Successfully");
-                // window.location.replace("/login")
+                window.location.replace("/login")
             } else {
                 toast.error(data.message || data.error);
             }
@@ -49,6 +48,16 @@ const ForgotPassword = () => {
         }
     };
    
+    useEffect(() => {
+        const email = window.localStorage.getItem("ForgotEmail");
+        const otpVerified = window.localStorage.getItem("otpVerified");
+        if(!email){
+            window.location.replace("/forgot-password/email");
+        }
+        if(email && otpVerified === "false"){
+            window.location.replace("/forgot-password/validation");
+        }
+    }, []);
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -61,17 +70,7 @@ const ForgotPassword = () => {
                 <div className="lg:w-1/2 p-12 items-center p-16 mx-auto bg-white rounded-lg shadow-lg">
                     <h1 className="text-3xl font-extrabold text-gray-800">Forgot Password</h1>
                     <form className="mt-8">
-                        {/* Email Input */}
-                        <div className="mb-4">
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-600">Email</label>
-                            <Input placeholder="Enter Email"
-                                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:border-blue-500"
-                                id="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                            />
-
-                        </div>
+                        {/* Email Input */}                        
                         <div className="mb-4">
                             <label htmlFor="password" className="block text-sm font-medium text-gray-600">Password</label>
                             <Input.Password placeholder="Enter Password"

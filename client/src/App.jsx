@@ -8,6 +8,8 @@ import UniversityDetail from './Pages/UniversityDetail'
 import Profile from './Pages/Profile'
 import EditProfile from './Pages/EditProfile'
 import ResetPassword from './Pages/ResetPassword'
+import ForgotPasswordEmail from './Components/ForgotPasswordEmail'
+import ForgotPasswordOtp from './Components/ForgotPasswordOtp'
 function App() {
 
   return (
@@ -17,6 +19,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/forgot-password/email" element={<ForgotPasswordEmail />} />
+          <Route path="/forgot-password/validation" element={<ForgotPasswordOtp />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
