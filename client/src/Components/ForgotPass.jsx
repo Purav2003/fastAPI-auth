@@ -53,11 +53,13 @@ const ForgotPassword = () => {
     return (
         <div className="flex min-h-screen bg-gray-100">
             <Toaster />
+            <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+
 
             {/* <div className="hidden lg:block w-1/2 bg-cover bg-center" style={{ backgroundImage: `url(${helloImage.src})` }}></div> */}
             <div className='w-full min-h-screen items-center flex justify-center'>
                 <div className="lg:w-1/2 p-12 items-center p-16 mx-auto bg-white rounded-lg shadow-lg">
-                    <h1 className="text-3xl font-extrabold text-gray-800">Reset Password</h1>
+                    <h1 className="text-3xl font-extrabold text-gray-800">Forgot Password</h1>
                     <form className="mt-8">
                         {/* Email Input */}
                         <div className="mb-4">

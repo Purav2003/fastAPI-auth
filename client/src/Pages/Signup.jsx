@@ -50,6 +50,7 @@ const Signup = () => {
     return (
         <div className="flex min-h-screen bg-gray-100">
             <Toaster />
+            <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
 
             {/* <div className="hidden lg:block w-1/2 bg-cover bg-center" style={{ backgroundImage: `url(${helloImage.src})` }}></div> */}
             <div className='w-full min-h-screen items-center flex justify-center'>

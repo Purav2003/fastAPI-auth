@@ -55,7 +55,7 @@ const UniversityDetail = () => {
                         <div className="font-semibold">Ranking:</div>
                         <div>{data.ranking}</div>
                         <div className="font-semibold">Website:</div>
-                        <div><a href={data.website} className="text-blue-500">{data.website}</a></div>
+                        <div><a href={data.website} target='_blank' className="text-blue-500">{data.website}</a></div>
                         <div className="font-semibold">Google Review:</div>
                         <div>{data.google_review}</div>
                         <div className="font-semibold">UniReview:</div>
