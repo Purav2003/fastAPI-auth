@@ -7,6 +7,8 @@ const Signup = () => {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        name:'',
+        phone:'',
         repassword: '',
     });
 
@@ -19,7 +21,7 @@ const Signup = () => {
 
     const handleLoginClick = async (e) => {
         e.preventDefault();
-        if (formData.email === '' || formData.password === '') {
+        if (formData.email === '' || formData.password === '' || formData.name === '' || formData.phone === '' || formData.repassword === '') {
             toast.error("All fields are required");
             return;
         }
@@ -30,6 +32,8 @@ const Signup = () => {
         const formDataToSend = new FormData();
         formDataToSend.append('email', formData.email);
         formDataToSend.append('password', formData.password);
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('phone', formData.phone);
         
         console.log(formDataToSend)
         try {
@@ -59,6 +63,18 @@ const Signup = () => {
                     <form className="mt-8">
                         {/* Email Input */}
                         <div className="mb-4">
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-600">Name</label>
+                            <input
+                                type="text"
+                                id="name"
+                                value={formData.name}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:border-blue-500"
+                                placeholder="Enter your name"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
                             <label htmlFor="email" className="block text-sm font-medium text-gray-600">Email</label>
                             <input
                                 type="email"
@@ -67,6 +83,18 @@ const Signup = () => {
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:border-blue-500"
                                 placeholder="Enter your email"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="phone" className="block text-sm font-medium text-gray-600">Phone Number</label>
+                            <input
+                                type="text"
+                                id="phone"
+                                value={formData.phone}
+                                onChange={handleInputChange}
+                                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:border-blue-500"
+                                placeholder="Enter your phone number"
                                 required
                             />
                         </div>

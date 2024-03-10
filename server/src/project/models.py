@@ -4,6 +4,8 @@ from typing import List
 
 class User(BaseModel):
     email: str
+    name:str
+    phone: str
     password: str
 
 class University(BaseModel):

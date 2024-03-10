@@ -12,15 +12,31 @@ const EditProfile = ({ id }) => {
     const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({
         email: '',
+        name: '',
+        phone: '',
     });
     const [formDataone, setFormDataone] = useState({
         email: '',
+        name: '',
+        phone: '',
     });
 
     const handleEmailChange = (e) => {
         setFormData({
             ...formData,
             email: e.target.value,
+        });
+    };
+    const handleNameChange = (e) => {
+        setFormData({
+            ...formData,
+            name: e.target.value,
+        });
+    };
+    const handlePhoneChange = (e) => {
+        setFormData({
+            ...formData,
+            phone: e.target.value,
         });
     };
 
@@ -49,9 +65,13 @@ const EditProfile = ({ id }) => {
 
             setFormDataone({
                 email: data_new.email,
+                name: data_new.name,
+                phone: data_new.phone,
             });
             setFormData({
                 email: data_new.email,
+                name: data_new.name,
+                phone: data_new.phone,
             });
             console.log(data_new);
             setLoading(false);
@@ -62,11 +82,11 @@ const EditProfile = ({ id }) => {
 
     const handleUpdate = async (e) => {
         e.preventDefault();
-        if (formData.email === '') {
+        if (formData.email === '' || formData.name === '' || formData.phone === '') {
             toast.error("Email is required")
             return
         }
-        if (formData.email === formDataone.email) {
+        if (formData.email === formDataone.email && formData.name === formDataone.name && formData.phone === formDataone.phone) {
             toast.error("No changes made")
             return
         }
@@ -74,12 +94,14 @@ const EditProfile = ({ id }) => {
 
         const formDataToSend = new FormData();
      formDataToSend.append('new_email', formData.email);
+     formDataToSend.append('new_name', formData.name);
+     formDataToSend.append('new_phone', formData.phone);
     
     try {
         const token = window.localStorage.getItem("token");
         const response = axios.put(
-            'http://localhost:8000/update-email/',
-            { new_email: formData.email }, // Pass the request body properly
+            'http://localhost:8000/update-profile/',
+            formDataToSend, // Pass the request body properly
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -141,6 +163,20 @@ return (<div className="w-full flex ">
 
                                         <div className="mb-4">
                                             <label htmlFor="name" className="block text-md font-medium text-gray-600">
+                                                Name:
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="name"
+                                                className="w-full"
+                                                placeholder="Enter your Name"
+                                                value={formData?.name}
+                                                onChange={handleNameChange}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="name" className="block text-md font-medium text-gray-600">
                                                 Email:
                                             </label>
                                             <input
@@ -150,6 +186,20 @@ return (<div className="w-full flex ">
                                                 placeholder="Enter your Email"
                                                 value={formData?.email}
                                                 onChange={handleEmailChange}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label htmlFor="name" className="block text-md font-medium text-gray-600">
+                                                Phone:
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="phonw"
+                                                className="w-full"
+                                                placeholder="Enter your Phone Number"
+                                                value={formData?.phone}
+                                                onChange={handlePhoneChange}
                                                 required
                                             />
                                         </div>

@@ -37,20 +37,26 @@ def decode_jwt(token):
 @router.post("/register/")
 async def register_user(user: User):
     collection = db["users"]
-    existing_user = await collection.find_one({"email": user.email})
-    if existing_user:
+    existing_user_email = await collection.find_one({"email": user.email})
+    existing_user_phone = await collection.find_one({"phone": user.phone})
+    if existing_user_email:
         raise HTTPException(status_code=400, detail="Email already registered")
+    if existing_user_phone:
+        raise HTTPException(status_code=400, detail="Phone already registered")
     hashed_password = pwd_context.hash(user.password)
-    user_data = {"email": user.email, "password": hashed_password}
+    user_data = {"email": user.email, "password": hashed_password, "name": user.name, "phone": user.phone}
     result = await collection.insert_one(user_data)
     return {"id": str(result.inserted_id), "email": user.email}
 
 # Login User API
 @router.post("/login/")
-async def login_user(user: User):
+async def login_user(request:Request):
     collection = db["users"]
-    existing_user = await collection.find_one({"email": user.email})
-    if not existing_user or not pwd_context.verify(user.password, existing_user['password']):
+    data = await request.json()
+    email = data.get("email")
+    password = data.get("password")
+    existing_user = await collection.find_one({"email": email})
+    if not existing_user or not pwd_context.verify(password, existing_user['password']):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     access_token_expires = timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     access_token = create_access_token(data={"sub": str(existing_user["_id"])}, expires_delta=access_token_expires)
@@ -105,34 +111,62 @@ async def forgot_password(request:Request):
         
 
 # Update Email API
-@router.put("/update-email/")
-async def update_email(request: Request):
+@router.put("/update-profile/")
+async def update_profile(request: Request):
     request_body = await request.json()    
     new_email = request_body.get("new_email")
+    new_phone = request_body.get("new_phone")
+    new_name = request_body.get("new_name")
+    print(new_email,new_phone,new_name)
+    
     token = request.headers.get("Authorization", None)
     if token is None:
         raise HTTPException(status_code=401, detail="Token is missing")
+    
     payload = decode_jwt(token)
     if payload is None:
         raise HTTPException(status_code=401, detail="Invalid token")
-    id = payload.get("sub")
-    if id is None:
+    
+    user_id = payload.get("sub")
+    if user_id is None:
         raise HTTPException(status_code=401, detail="Invalid token")
+    
     collection = db["users"]
-    id_obj = ObjectId(id)
-    user = await collection.find_one({"_id":id_obj})
-    email = user['email']
-    if email == new_email:
-        raise HTTPException(status_code=400, detail="New email is same as old email")
-    id_obj = ObjectId(id)
-    new_email_user = await collection.find_one({"email": new_email})
-    if new_email_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    conf_email = await collection.update_one({"_id": id_obj}, {"$set": {"email": new_email}})
-    if conf_email:
-        return {"message": "Email updated successfully"}
-    else:
-        return {"message": "Email not updated"}
+    user = await collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    update_query = {}
+    update_message = "Profile not updated"
+
+    if new_email:
+        if new_email != user.get("email"):
+            existing_user_with_email = await collection.find_one({"email": new_email})
+            if existing_user_with_email:
+                raise HTTPException(status_code=400, detail="Email already registered")
+            else:
+                update_query["email"] = new_email
+                update_message = "Profile updated successfully"
+
+    if new_phone:
+        if new_phone != user.get("phone"):
+            existing_user_with_phone = await collection.find_one({"phone": new_phone})
+            if existing_user_with_phone:
+                raise HTTPException(status_code=400, detail="Phone number already registered")
+            else:
+                update_query["phone"] = new_phone
+                update_message = "Profile updated successfully"
+
+    if new_name:
+        if new_name != user.get("name"):
+            update_query["name"] = new_name
+            update_message = "Profile updated successfully"
+
+    if update_query:
+        await collection.update_one({"_id": ObjectId(user_id)}, {"$set": update_query})
+    
+    return {"message": update_message}
+
     
 # Profile API
 @router.get("/profile/")
@@ -150,7 +184,7 @@ async def profile(request: Request):
     id_obj = ObjectId(id)    
     user = await collection.find_one({"_id": id_obj})    
     if user:
-        return {"email":user['email']}
+        return {"email":user['email'],"name":user['name'],"phone":user['phone']} 
     else:
         return {"message": "User not found"}
     
