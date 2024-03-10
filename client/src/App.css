@@ -4,7 +4,7 @@
 
 body {
 
-    font-family: 'Raleway', sans-serif;
+    font-family: 'Raleway' !important;
     background-color: #f3f4f6;
     color: #111827;
 }
