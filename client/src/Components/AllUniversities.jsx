@@ -50,17 +50,22 @@ const AllUniversities = () => {
 
     return (
         <div className="p-8">
-            <div className="relative mx-12">
+            <div className='mx-12 lg:flex md:flex lg:justify-between lg:items-center md:justify-between md:items-center'>
+            <div className="relative">
                 <button className="absolute inset-y-0 left-2 text-gray-400 px-3 py-2 rounded-l">
                     <FaSearch />
                 </button>
                 <input
                     type="text"
                     placeholder="Enter University Name"
-                    className="border rounded p-2 w-[300px] outline-none rounded-full pl-12 py-3"
+                    className="border rounded p-2 w-[300px] outline-none rounded-md pl-12 py-3"
                     value={searchTerm}
                     onChange={handleSearch}
                 />
+            </div>
+            <div>
+                <Link to="/university/comparision"><button className='bg-blue-700 rounded-md px-4 py-2 text-white'>Compare Universities</button></Link>
+            </div>
             </div>
             {loading ? (
                 <Loader />
