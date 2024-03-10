@@ -10,6 +10,7 @@ import EditProfile from './Pages/EditProfile'
 import ResetPassword from './Pages/ResetPassword'
 import ForgotPasswordEmail from './Components/ForgotPasswordEmail'
 import ForgotPasswordOtp from './Components/ForgotPasswordOtp'
+import ComparisonPage from './Components/UniComparision'
 function App() {
 
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/editProfile" element={<EditProfile />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
           <Route path="/university/:id" element={<UniversityDetail />} />
+          <Route path="/university/comparision" element={<ComparisonPage />} />
         </Routes>
       </Router>
     </>
