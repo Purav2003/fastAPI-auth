@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaStar } from 'react-icons/fa';
 
 const ComparisionDetail = ({university}) => {
     return (
@@ -30,7 +31,7 @@ const ComparisionDetail = ({university}) => {
                     <div className="font-semibold">Google Review:</div>
                     <div>{university.google_review}</div>
                     <div className="font-semibold">UniReview:</div>
-                    <div>{university.uniReview}</div>
+                    <div className='flex items-center'>{university.uniReview} <FaStar className='ml-1 text-yellow-500'/> <span className='ml-2'>({university.reviews?.length} Reviews)</span></div>
                 </div>
             </div>
         </div>

@@ -56,7 +56,7 @@ def validate_token(token):
     if id is None:
         raise HTTPException(status_code=401, detail="Invalid token")
     else: 
-        return True
+        return id
 
 # Create University API
 @router.post("/universities/")
@@ -112,15 +112,43 @@ async def get_universities(
 
 # Read University API
 @router.get("/university/{university_id}", response_model=UniversityOut)
-async def read_university(university_id: str,request:Request):
+async def read_university(university_id: str, request: Request):
     token = request.headers.get("Authorization", None)
-    validateToken = validate_token(token)    
-    if(validateToken):
+    validateToken = validate_token(token)
+    if validateToken:
         university = await db["universities"].find_one({"_id": ObjectId(university_id)})
         if university:
+            # Assuming you have a function to get user_name from user_id
+            # Replace getUserById with your actual function
+            async def get_user_name(user_id):
+                user = await db["users"].find_one({"_id": ObjectId(user_id)})
+                return user.get("name") if user else None
+
+            # Fetch user_name for each review
+            reviews_with_user_names = []
+            for review in university.get("reviews", []):
+                user_name = await get_user_name(review.get("user_id"))
+                review_with_user_name = {**review, "user_name": user_name}
+                reviews_with_user_names.append(review_with_user_name)
+
+            university["reviews"] = reviews_with_user_names
+            totalStars = university.get("reviews")
+            total = 0
+            for star in totalStars:
+                total += star.get("stars")
+            if totalStars:
+                average = total/len(totalStars)
+                university["uniReview"] = average 
+                result = await db["universities"].update_one(
+                    {"_id": ObjectId(university_id)},
+                    {"$set": {"uniReview": average}}
+                )
+                                                           
+
             return UniversityOut(**university, id=str(university["_id"]))
         else:
             raise HTTPException(status_code=404, detail="University not found")
+
 
 # Update University API
 @router.put("/university/{university_id}")
@@ -145,3 +173,46 @@ async def delete_university(university_id: str,request:Request):
             return {"message": "University deleted successfully"}
         else:
             raise HTTPException(status_code=404, detail="University not found") 
+        
+## Add Review API
+@router.post("/university/add_review")
+async def add_review(request:Request):
+    token = request.headers.get("Authorization", None)
+    validateToken = validate_token(token)
+    if validateToken:
+        request_body = await request.json()
+        print(request_body)
+        university_id = request_body.get("university_id")
+        review = request_body.get("comment")
+        stars = request_body.get("star")
+        user_id = validateToken
+        uni = await db["universities"].find_one({"_id": ObjectId(university_id)})
+        reviews = uni.get("reviews")  
+        if reviews:      
+            for rev in reviews:
+                if rev.get("user_id") == user_id:
+                    return {"message": "User already reviewed", "status": 400}
+        if university_id is None or review is None:            
+            return {"message": "University id and review are required", "status": 400}
+        else:
+            university = await db["universities"].find_one({"_id": ObjectId(university_id)})
+            if university:                
+                result = await db["universities"].update_one(
+                    {"_id": ObjectId(university_id)},
+{ 
+    "$push": { 
+        "reviews": { 
+            "review": review, 
+            "stars": stars, 
+            "user_id": user_id
+        } 
+    } 
+}
+                )
+                if result.modified_count == 1:
+                    return {"message": "Review added successfully","status":200}
+                else:
+                    raise HTTPException(status_code=500, detail="Failed to add review")
+            else:
+                raise HTTPException(status_code=404, detail="University not found")
+        

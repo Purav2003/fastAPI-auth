@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Loader from './Loader';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch,FaStar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-
 const PAGE_SIZE = 5;
 
 const AllUniversities = () => {
@@ -81,7 +80,10 @@ const AllUniversities = () => {
                                 />
                             </Link>
                             <div className="mt-3">
+                                <div className='flex items-center justify-between'>
                                 <p className="font-bold">{university.name}</p>
+                                <p className="flex items-center">{university.uniReview} <FaStar className='ml-1 text-yellow-500' /></p>
+                                </div>
                                 <p className="text-gray-600">{university.location}</p>
                             </div>
                         </div>

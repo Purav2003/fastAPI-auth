@@ -22,5 +22,6 @@ class University(BaseModel):
     ranking: int = None
     image_url: str = None
     google_review: float = None
-    uniReview: str = None
+    uniReview: float = None
+    reviews: List[dict] = []
     
